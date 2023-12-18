@@ -64,28 +64,28 @@ public:
 };
 
 /*
-This function uses ncurses to draw a red box for the 
+This function uses ncurses to draw a red box for the game field
 */
-int drawBox(){
+int drawBox(int height, int width){
     int i;
     start_color();
     init_pair(1, COLOR_RED, COLOR_BLACK);   //Color pair 1; Red on Black
 
     attron(COLOR_PAIR(1));      // Turn on color pair
-    for (int i = 0; i <= 79; ++i) {
+    for (int i = 0; i <= width; ++i) {
         mvaddch(0, i, ACS_HLINE);   // Top horizontal line
-        mvaddch(21, i, ACS_HLINE);  // Bottom horizontal line
+        mvaddch(height, i, ACS_HLINE);  // Bottom horizontal line
     }
 
-    for (int i = 0; i <= 21; ++i) {
+    for (int i = 0; i <= height; ++i) {
         mvaddch(i, 0, ACS_VLINE);   // Left vertical line
-        mvaddch(i, 79, ACS_VLINE);  // Right vertical line
+        mvaddch(i, width, ACS_VLINE);  // Right vertical line
     }
 
     mvaddch(0, 0, ACS_ULCORNER);    // Upper-left corner
-    mvaddch(0, 79, ACS_URCORNER);   // Upper-right corner
-    mvaddch(21, 0, ACS_LLCORNER);   // Lower-left corner
-    mvaddch(21, 79, ACS_LRCORNER);  // Lower-right corner
+    mvaddch(0, width, ACS_URCORNER);   // Upper-right corner
+    mvaddch(height, 0, ACS_LLCORNER);   // Lower-left corner
+    mvaddch(height, width, ACS_LRCORNER);  // Lower-right corner
 
     attroff(COLOR_PAIR(1));     // Turn off color pair
     return 0;
@@ -161,7 +161,7 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
 This function draws the box, paddles, ball, score, and 'Bounce'
 */
 int printBoard(Ball* ball, Paddle* l, Paddle* r, Player* a, Player* b){
-    drawBox();
+    drawBox(21,79);
     r->draw();
     l->draw();
     mvaddch(ball->y, ball->x, 'o');
@@ -186,7 +186,7 @@ int begin(){
     noecho();
     keypad(stdscr, TRUE);
     srand(time(NULL));
-    drawBox();
+    drawBox(21,79);
     mvprintw(1,5, "Welcome to Bounce!");
     mvprintw(2,5, "This totally original game was created as extra c++ practice");
     mvprintw(3,5, "by me, Carter Parks!");
