@@ -95,7 +95,7 @@ int drawBox(){
 This function uses the ball's location and direction to move the ball, then checks some cases;
     (If the ball hits a paddle, goal, or edge)
 */
-int moveBall(Ball* ball, Player* p1, Player* p2, Paddle* left, Paddle* right){
+int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
     int randomAngle;
     double radians;
     mvaddch(ball->y,ball->x, ' ');
@@ -194,12 +194,13 @@ int begin(){
     mvprintw(6,5, "Player 2 is on the right; use the up and down arrows to move your paddle");
     mvprintw(8,5, "Choose Difficulty: ");
     mvprintw(9, 10, "1: Easy    2: Moderate    3: Hard");
+    mvprintw(12, 5, "Press 1, 2, or 3 to choose difficulty and continue");
     refresh();
     return 0;
 }
 
 int main(int argc, char *argv[]){
-    int wait, ui, pLength;
+    int ui, pLength;
     begin();
     ui = 0;
     while (ui < 1 || ui > 3){
@@ -216,11 +217,13 @@ int main(int argc, char *argv[]){
     p2.numPoints = 0;
 
     timeout(0);
+    //This loop executes until the user presses 'q' or a player has 3 points
     while(ui != 'q' && p1.numPoints < 3 && p2.numPoints < 3){
-        wait = 500000 / (&ball)->vel;
-        usleep(wait);
-        moveBall(&ball, &p1, &p2, &leftPaddle, &rightPaddle);
+        //This line effectively speeds up the game as the ball's velocity becomes faster
+        usleep(500000 / (&ball)->vel);
+        moveBall(&ball, &leftPaddle, &rightPaddle, &p1, &p2);
         printBoard(&ball, &leftPaddle, &rightPaddle, &p1, &p2);
+        //Take user input (unbuffered)
         ui = getch();
         switch (ui) {
             case 'e':
@@ -239,6 +242,8 @@ int main(int argc, char *argv[]){
                 refresh();
         }
     }
+
+    //If loop exits, clear screen, check if game was won, end program
     clear();
 
     if (p1.numPoints == 3){
@@ -251,10 +256,9 @@ int main(int argc, char *argv[]){
         mvprintw(10,35, "Game Ended");
     }
     move(22,80);
-    
     refresh();
     usleep(1000000);
-    endwin();  // End curses mode
+    endwin();
 
     return 0;
 }
