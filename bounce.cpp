@@ -6,6 +6,9 @@
 #include <ncurses.h>
 #include <cstring>
 
+int gameWidth = 79;
+int gameHeight = 21;
+
 class Ball{
 public:
     double x;
@@ -16,8 +19,8 @@ public:
     Ball(int velocity)
         :  vel(velocity){
         int randomAngle = rand() % 360;
-        x = 40;
-        y = rand() % 20 + 1;
+        x = gameWidth / 2;
+        y = rand() % (gameHeight - 1) + 1;
         while ((randomAngle > 60 && randomAngle < 120) || (randomAngle > 240 && randomAngle < 300)){
             randomAngle = rand() % 360;
         }
@@ -43,12 +46,13 @@ public:
     }
 
     int moveDown(){
-        if (top + length < 21){
+        if (top + length < gameHeight){
             top += 1;
             mvaddch(top - 1, x, ' ');
         }
         return 0;
     }
+
     int draw(){
         int i;
         for (i = 0; i < length; i ++){
@@ -109,9 +113,9 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
             ball->vel += 2;
         }
     }
-    else if (ball->x > 77){
+    else if (ball->x > (gameWidth - 2)){
         if (ball->y - right->top < right->length && ball->y - right->top >=0){
-            ball->x = 77;
+            ball->x = (gameWidth - 2);
             ball->dir = M_PI - ball->dir;
             ball->vel += 2;
         }
@@ -129,8 +133,7 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
         ball->dir = radians;
         ball->vel = 5;
     }
-
-    if (ball->x > 78){
+    if (ball->x > (gameWidth - 1)){
         randomAngle = rand() % 360;
         while ((randomAngle > 60 && randomAngle < 120) || (randomAngle > 240 && randomAngle < 300)){
             randomAngle = rand() % 360;
@@ -138,22 +141,19 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
         radians = randomAngle * M_PI / 180.0; // Convert degrees to radians
         mvaddch(ball->y, ball->x, ' ');
         p1->numPoints += 1;
-        ball->x = 40;
-        ball->y = rand() % 20 + 1;
+        ball->x = gameWidth / 2;
+        ball->y = rand() % (gameHeight - 1) + 1;
         ball->dir = radians;
         ball->vel = 5;
     }
-
     if (ball->y < 1){
         ball->y = 1;
         ball->dir = -(ball->dir);
     }
-
-    if (ball->y > 20){
-        ball->y = 20;
+    if (ball->y > gameHeight - 1){
+        ball->y = gameHeight - 1;
         ball->dir = -(ball->dir);
     }
-
     return 0;
 }
 
@@ -161,17 +161,17 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
 This function draws the box, paddles, ball, score, and 'Bounce'
 */
 int printBoard(Ball* ball, Paddle* l, Paddle* r, Player* a, Player* b){
-    drawBox(21,79);
+    drawBox(gameHeight,gameWidth);
     r->draw();
     l->draw();
     mvaddch(ball->y, ball->x, 'o');
-    mvprintw(23, 33, "score: %d-%d", a->numPoints, b->numPoints);
+    mvprintw(gameHeight + 2, (gameWidth / 2) - 7, "score: %d-%d", a->numPoints, b->numPoints);
     start_color();
     init_pair(1, COLOR_RED, COLOR_BLACK); // Red on Black)
     attron(COLOR_PAIR(1));
-    mvprintw(22, 35, "Bounce");
+    mvprintw(gameHeight + 1, (gameWidth / 2) - 5, "Bounce");
     attroff(COLOR_PAIR(1));
-    move(23,80);
+    move(gameHeight + 2,80);
     refresh();
     return 0;
 }
@@ -186,7 +186,7 @@ int begin(){
     noecho();
     keypad(stdscr, TRUE);
     srand(time(NULL));
-    drawBox(21,79);
+    drawBox(gameHeight,gameWidth);
     mvprintw(1,5, "Welcome to Bounce!");
     mvprintw(2,5, "This totally original game was created as extra c++ practice");
     mvprintw(3,5, "by me, Carter Parks!");
@@ -210,7 +210,7 @@ int main(int argc, char *argv[]){
     clear();
     Ball ball = Ball((ui * 2) + 1);
     Paddle leftPaddle = Paddle(8, 1, pLength);
-    Paddle rightPaddle = Paddle(8, 78, pLength);
+    Paddle rightPaddle = Paddle(8, (gameWidth - 1), pLength);
     Player p1;
     Player p2;
     p1.numPoints = 0;
@@ -247,15 +247,15 @@ int main(int argc, char *argv[]){
     clear();
 
     if (p1.numPoints == 3){
-        mvprintw(10,35, "Congrats player 1! You won!");
+        mvprintw(gameHeight / 2,(gameWidth / 2) - 5, "Congrats player 1! You won!");
     }
     else if(p2.numPoints ==3){
-        mvprintw(10,35, "Congrats player 2! You won!");
+        mvprintw(gameHeight / 2,(gameWidth / 2) - 5, "Congrats player 2! You won!");
     }
     else{
-        mvprintw(10,35, "Game Ended");
+        mvprintw(gameHeight / 2,(gameWidth / 2) - 5, "Game Ended");
     }
-    move(22,80);
+    move(gameHeight,gameWidth);
     refresh();
     usleep(1000000);
     endwin();
