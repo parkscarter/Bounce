@@ -15,9 +15,10 @@ public:
     double y;
     double dir;
     int vel;
+    int diff;
 
-    Ball(int velocity)
-        :  vel(velocity){
+    Ball(int velocity, int difficulty)
+        :  vel(velocity), diff(difficulty){
         int randomAngle = rand() % 360;
         x = gameWidth / 2;
         y = rand() % (gameHeight - 1) + 1;
@@ -106,20 +107,21 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
     ball->x += (cos(ball->dir));
     ball->y += (sin(ball->dir));
 
-    if (ball->x < 2){
-        if (ball->y - left->top < left->length && ball->y - left->top >=0){
-            ball->x = 2;
-            ball->dir = M_PI - ball->dir;
-            ball->vel += 2;
-        }
-    }
-    else if (ball->x > (gameWidth - 2)){
-        if (ball->y - right->top < right->length && ball->y - right->top >=0){
-            ball->x = (gameWidth - 2);
-            ball->dir = M_PI - ball->dir;
-            ball->vel += 2;
-        }
-    }
+    //Hits the left paddle
+    if (ball->x < 2 && 
+    ball->y < left->top + left->length && ball->y >= left->top){
+        ball->x = 2;
+        ball->dir = M_PI - ball->dir;
+        ball->vel += ball->diff;
+        
+    }   //Hits the right paddle
+    else if (ball->x > (gameWidth - 2) &&
+    ball->y  < right->top + right->length && ball->y >= right->top){
+        ball->x = (gameWidth - 2);
+        ball->dir = M_PI - ball->dir;
+        ball->vel += ball->diff;
+        
+    }   //P2 Scores (reset ball, add a point to P2)
     if (ball->x < 1){   
         randomAngle = rand() % 360;
         while ((randomAngle > 60 && randomAngle < 120) || (randomAngle > 240 && randomAngle < 300)){
@@ -132,7 +134,7 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
         ball->y = rand() % 20 + 1;
         ball->dir = radians;
         ball->vel = 5;
-    }
+    }   //P1 Scores (reset ball, add a point to P2)
     if (ball->x > (gameWidth - 1)){
         randomAngle = rand() % 360;
         while ((randomAngle > 60 && randomAngle < 120) || (randomAngle > 240 && randomAngle < 300)){
@@ -145,11 +147,11 @@ int moveBall(Ball* ball, Paddle* left, Paddle* right, Player* p1, Player* p2){
         ball->y = rand() % (gameHeight - 1) + 1;
         ball->dir = radians;
         ball->vel = 5;
-    }
+    }   //Hits top of screen
     if (ball->y < 1){
         ball->y = 1;
         ball->dir = -(ball->dir);
-    }
+    }   //Hits bottom of screen
     if (ball->y > gameHeight - 1){
         ball->y = gameHeight - 1;
         ball->dir = -(ball->dir);
@@ -200,15 +202,34 @@ int begin(){
 }
 
 int main(int argc, char *argv[]){
-    int ui, pLength;
+    int ui, pLength, ballV, diff;
     begin();
     ui = 0;
-    while (ui < 1 || ui > 3){
-        ui = getch() - '0';
+    ui = getch();
+    switch (ui){
+        case '1':
+            pLength = 5;
+            ballV = 3;
+            diff = 1;
+            break;
+        case '2':
+            pLength = 4;
+            ballV = 5;
+            diff = 2;
+            break;
+        case '3':
+            pLength = 3;
+            ballV = 7;
+            diff = 3;
+            break;
+        default:
+            pLength = 4;
+            ballV = 5;
+            diff = 2;
     }
-    pLength = 3 + (3 - ui);
+
     clear();
-    Ball ball = Ball((ui * 2) + 1);
+    Ball ball = Ball(ballV, diff);
     Paddle leftPaddle = Paddle(8, 1, pLength);
     Paddle rightPaddle = Paddle(8, (gameWidth - 1), pLength);
     Player p1;
@@ -220,7 +241,7 @@ int main(int argc, char *argv[]){
     //This loop executes until the user presses 'q' or a player has 3 points
     while(ui != 'q' && p1.numPoints < 3 && p2.numPoints < 3){
         //This line effectively speeds up the game as the ball's velocity becomes faster
-        usleep(500000 / (&ball)->vel);
+        usleep(400000 / (&ball)->vel);
         moveBall(&ball, &leftPaddle, &rightPaddle, &p1, &p2);
         printBoard(&ball, &leftPaddle, &rightPaddle, &p1, &p2);
         //Take user input (unbuffered)
